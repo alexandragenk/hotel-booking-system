@@ -22,6 +22,17 @@ Each service uses an in-memory **H2** database.
 ```
 
 ### Start services
-```
+```bash
 ./gradlew clean runAll
 ```
+
+### Run tests
+```bash
+./gradlew test
+```
+
+## API
+
+### [Booking Service](booking-service/openapi.yaml)
+
+### [Hotel Service](hotel-service/openapi.yaml)

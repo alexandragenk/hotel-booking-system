@@ -1,0 +1,400 @@
+openapi: 3.0.3
+info:
+  title: Booking Service API
+  version: 1.0.0
+  description: 'API for managing user accounts (admin) and room bookings (users).
+    Authentication: JWT Bearer.
+    Roles:
+
+    - ADMIN: manage users under `/api/user` (POST/PATCH/DELETE)
+
+    - USER: booking operations under `/api/booking` and `/api/bookings`
+    '
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: Auth
+    description: Registration and login
+  - name: Users
+    description: Admin user management
+  - name: Bookings
+    description: Booking operations
+security:
+  - bearerAuth: []
+paths:
+  /api/user/register:
+    post:
+      tags:
+        - Auth
+      summary: Register a user
+      operationId: registerUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /api/user/auth:
+    post:
+      tags:
+        - Auth
+      summary: Authenticate (login)
+      operationId: authenticateUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/user:
+    get:
+      tags:
+        - Users
+      summary: List all users (admin)
+      operationId: listUsers
+      responses:
+        '200':
+          description: Users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags:
+        - Users
+      summary: Create an user (admin)
+      operationId: createUser
+      parameters:
+        - name: username
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: password
+          in: query
+          required: true
+          schema:
+            type: string
+            format: password
+      responses:
+        '200':
+          description: JWT token for created admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/user/{id}:
+    patch:
+      tags:
+        - Users
+      summary: Update user role (admin)
+      operationId: updateUserRole
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: role
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/UserRole'
+      responses:
+        '200':
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Users
+      summary: Delete a user (admin)
+      operationId: deleteUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/booking:
+    post:
+      tags:
+        - Bookings
+      summary: Create a booking
+      operationId: createBooking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingRequest'
+      responses:
+        '200':
+          description: Created booking
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/bookings:
+    get:
+      tags:
+        - Bookings
+      summary: List current user's bookings
+      operationId: listBookings
+      responses:
+        '200':
+          description: Bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookingResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/booking/{id}:
+    get:
+      tags:
+        - Bookings
+      summary: Get booking by id
+      operationId: getBookingById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Booking
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Bookings
+      summary: Cancel a booking
+      operationId: cancelBooking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Cancelled
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    AuthRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: alice
+        password:
+          type: string
+          format: password
+          example: secret
+    AuthResponse:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+    UserRole:
+      type: string
+      enum:
+        - ADMIN
+        - USER
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        passwordHash:
+          type: string
+    BookingStatus:
+      type: string
+      enum:
+        - CONFIRMED
+        - PENDING
+        - CANCELLED
+    BookingRequest:
+      type: object
+      required:
+        - roomId
+        - startDate
+        - endDate
+        - autoSelect
+      properties:
+        roomId:
+          type: integer
+          format: int64
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        autoSelect:
+          type: boolean
+          description: If true, service may auto-select a room instead of using roomId
+            strictly.
+    BookingResponse:
+      type: object
+      required:
+        - id
+        - userId
+        - roomId
+        - startDate
+        - endDate
+        - status
+      properties:
+        id:
+          type: integer
+          format: int64
+        userId:
+          type: integer
+          format: int64
+        roomId:
+          type: integer
+          format: int64
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/BookingStatus'
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
